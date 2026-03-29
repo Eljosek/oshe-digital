@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
 import SpotlightEffect from "@/components/SpotlightEffect";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
         <CustomCursor />
         <SpotlightEffect />
         {children}
+        <Analytics />
       </body>
     </html>
   );
