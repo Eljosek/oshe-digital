@@ -123,7 +123,6 @@ export default function Hero() {
                 {[
                   { end: 5, suffix: "+", label: "Proyectos entregados" },
                   { end: 100, suffix: "%", label: "Clientes satisfechos" },
-                  { end: 3, suffix: "", label: "Países alcanzados" },
                   { end: null, static: "24/7", label: "Soporte activo" },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center lg:text-left">
