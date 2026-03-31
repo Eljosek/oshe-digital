@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import CondorMascot from "./CondorMascot";
+import OwlMascot from "./OwlMascot";
 
 function CountUp({
   end,
@@ -139,10 +139,10 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Right — Condor Mascot */}
+            {/* Right — Owl Mascot */}
             <div className="animate-scale-in delay-300 flex items-center justify-center lg:justify-end">
               <div className="w-72 sm:w-80 md:w-96 lg:w-[420px]">
-                <CondorMascot />
+                <OwlMascot />
               </div>
             </div>
           </div>

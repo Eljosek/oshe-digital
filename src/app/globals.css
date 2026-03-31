@@ -97,47 +97,43 @@ body {
 .delay-800 { animation-delay: 0.8s; }
 
 /* ============================================= */
-/*  CONDOR WING SOAR ANIMATIONS                  */
+/*  OWL MASCOT ANIMATIONS                         */
 /* ============================================= */
-@keyframes flapLeft {
-  0%, 100% { transform: rotate(0deg); }
-  30%       { transform: rotate(-7deg); }
-  65%       { transform: rotate(4deg); }
-}
-@keyframes flapRight {
-  0%, 100% { transform: rotate(0deg); }
-  30%       { transform: rotate(7deg); }
-  65%       { transform: rotate(-4deg); }
-}
-
-.wing-left {
-  animation: flapLeft 5s ease-in-out infinite;
-}
-.wing-right {
-  animation: flapRight 5s ease-in-out infinite;
-}
-
-/* Condor body float */
-.condor-body {
-  animation: condorFloat 4s ease-in-out infinite;
-}
-@keyframes condorFloat {
+@keyframes owlFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px); }
 }
+@keyframes owlWingLeft {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-7deg); }
+  65% { transform: rotate(4deg); }
+}
+@keyframes owlWingRight {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(7deg); }
+  65% { transform: rotate(-4deg); }
+}
 
-/* Condor container breathing glow */
-.condor-container {
+.owl-wing-left {
+  animation: owlWingLeft 5s ease-in-out infinite;
+}
+.owl-wing-right {
+  animation: owlWingRight 5s ease-in-out infinite;
+}
+.owl-body {
+  animation: owlFloat 4s ease-in-out infinite;
+}
+.owl-container {
   filter: drop-shadow(0 0 40px rgba(79, 109, 245, 0.08));
   transition: filter 0.5s ease;
 }
-.condor-container:hover {
+.owl-container:hover {
   filter: drop-shadow(0 0 60px rgba(79, 109, 245, 0.18));
 }
-.condor-container:hover .wing-left {
+.owl-container:hover .owl-wing-left {
   animation-duration: 1.2s;
 }
-.condor-container:hover .wing-right {
+.owl-container:hover .owl-wing-right {
   animation-duration: 1.2s;
 }
 
