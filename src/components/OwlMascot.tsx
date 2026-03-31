@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface OwlMascotProps {
   className?: string;
@@ -8,17 +8,37 @@ interface OwlMascotProps {
 
 export default function OwlMascot({ className = "" }: OwlMascotProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
   const animationRef = useRef<number>(0);
   const targetRef = useRef({ x: 0, y: 0 });
   const currentRef = useRef({ x: 0, y: 0 });
 
+  // Refs for direct DOM manipulation — no React re-renders
+  const eyeGroup1xLRef = useRef<SVGGElement>(null);
+  const eyeGroup12xLRef = useRef<SVGGElement>(null);
+  const eyeGroup04xLRef = useRef<SVGGElement>(null);
+  const eyeGroup1xRRef = useRef<SVGGElement>(null);
+  const eyeGroup12xRRef = useRef<SVGGElement>(null);
+  const eyeGroup04xRRef = useRef<SVGGElement>(null);
+
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
   const animate = useCallback(() => {
-    currentRef.current.x = lerp(currentRef.current.x, targetRef.current.x, 0.08);
-    currentRef.current.y = lerp(currentRef.current.y, targetRef.current.y, 0.08);
-    setEyeOffset({ x: currentRef.current.x, y: currentRef.current.y });
+    const prev = currentRef.current;
+    prev.x = lerp(prev.x, targetRef.current.x, 0.07);
+    prev.y = lerp(prev.y, targetRef.current.y, 0.07);
+
+    // Direct DOM — bypass React render entirely
+    const t1 = `translate(${prev.x},${prev.y})`;
+    const t12 = `translate(${prev.x * 1.2},${prev.y * 1.2})`;
+    const t04 = `translate(${prev.x * 0.4},${prev.y * 0.4})`;
+
+    eyeGroup1xLRef.current?.setAttribute("transform", t1);
+    eyeGroup12xLRef.current?.setAttribute("transform", t12);
+    eyeGroup04xLRef.current?.setAttribute("transform", t04);
+    eyeGroup1xRRef.current?.setAttribute("transform", t1);
+    eyeGroup12xRRef.current?.setAttribute("transform", t12);
+    eyeGroup04xRRef.current?.setAttribute("transform", t04);
+
     animationRef.current = requestAnimationFrame(animate);
   }, []);
 
@@ -30,14 +50,14 @@ export default function OwlMascot({ className = "" }: OwlMascotProps) {
       const cy = rect.top + rect.height / 2;
       const dx = (e.clientX - cx) / (rect.width / 2);
       const dy = (e.clientY - cy) / (rect.height / 2);
-      const maxOffset = 6;
+      const maxOffset = 7;
       targetRef.current = {
         x: Math.max(-maxOffset, Math.min(maxOffset, dx * maxOffset)),
         y: Math.max(-maxOffset, Math.min(maxOffset, dy * maxOffset)),
       };
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     animationRef.current = requestAnimationFrame(animate);
 
     return () => {
@@ -50,322 +70,327 @@ export default function OwlMascot({ className = "" }: OwlMascotProps) {
     <div className={`owl-container ${className}`}>
       <svg
         ref={svgRef}
-        viewBox="0 0 400 460"
+        viewBox="0 0 400 480"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-auto"
       >
         <defs>
-          {/* Body gradient — warm dark brown */}
-          <radialGradient id="owlBodyGrad" cx="50%" cy="40%" r="60%">
-            <stop offset="0%" stopColor="#5a3e28" />
-            <stop offset="70%" stopColor="#3d2816" />
-            <stop offset="100%" stopColor="#2a1a0d" />
+          {/* Deep midnight body */}
+          <radialGradient id="owlBodyNight" cx="50%" cy="38%" r="60%">
+            <stop offset="0%" stopColor="#1a1a2e" />
+            <stop offset="50%" stopColor="#0f0f1a" />
+            <stop offset="100%" stopColor="#080812" />
           </radialGradient>
 
-          {/* Belly lighter patch */}
-          <radialGradient id="owlBellyGrad" cx="50%" cy="45%" r="50%">
-            <stop offset="0%" stopColor="#c9a66b" />
-            <stop offset="60%" stopColor="#a07840" />
-            <stop offset="100%" stopColor="#7d5a2f" />
+          {/* Subtle chest plumage */}
+          <radialGradient id="owlChest" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stopColor="#1e1e3a" />
+            <stop offset="60%" stopColor="#14142a" />
+            <stop offset="100%" stopColor="#0c0c1a" />
           </radialGradient>
 
-          {/* Facial disc — warm cream */}
-          <radialGradient id="owlFaceGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f5e6c8" />
-            <stop offset="70%" stopColor="#e0c99a" />
-            <stop offset="100%" stopColor="#c9a66b" />
+          {/* Face disc — dark silver/slate */}
+          <radialGradient id="owlFaceNight" cx="50%" cy="48%" r="52%">
+            <stop offset="0%" stopColor="#2a2a40" />
+            <stop offset="50%" stopColor="#1e1e30" />
+            <stop offset="100%" stopColor="#141425" />
           </radialGradient>
 
-          {/* Eye white glow */}
-          <radialGradient id="eyeWhiteGrad" cx="50%" cy="45%" r="50%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#e8e0d4" />
+          {/* Neon eye glow — accent blue */}
+          <radialGradient id="eyeGlowBlue" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#4F6DF5" />
+            <stop offset="60%" stopColor="#3a52c4" />
+            <stop offset="100%" stopColor="#2a3a8a" />
           </radialGradient>
 
-          {/* Iris — golden amber */}
-          <radialGradient id="irisGrad" cx="45%" cy="40%" r="50%">
-            <stop offset="0%" stopColor="#f5b731" />
-            <stop offset="50%" stopColor="#d4920a" />
-            <stop offset="100%" stopColor="#b07508" />
+          {/* Iris — electric cyan-blue */}
+          <radialGradient id="irisNeon" cx="42%" cy="38%" r="55%">
+            <stop offset="0%" stopColor="#6B85FF" />
+            <stop offset="40%" stopColor="#4F6DF5" />
+            <stop offset="100%" stopColor="#3045b0" />
           </radialGradient>
 
-          {/* Wing gradient */}
-          <linearGradient id="wingGradL" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#4a3220" />
-            <stop offset="100%" stopColor="#3a2515" />
+          {/* Wing gradient — dark with blue edge */}
+          <linearGradient id="wingNightL" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0e0e1c" />
+            <stop offset="80%" stopColor="#12122a" />
+            <stop offset="100%" stopColor="#1a1a3a" />
           </linearGradient>
-          <linearGradient id="wingGradR" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#4a3220" />
-            <stop offset="100%" stopColor="#3a2515" />
+          <linearGradient id="wingNightR" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#0e0e1c" />
+            <stop offset="80%" stopColor="#12122a" />
+            <stop offset="100%" stopColor="#1a1a3a" />
           </linearGradient>
 
-          {/* Glow filter */}
-          <filter id="owlGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          {/* Circuit line gradient */}
+          <linearGradient id="circuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4F6DF5" stopOpacity="0" />
+            <stop offset="50%" stopColor="#4F6DF5" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#4F6DF5" stopOpacity="0" />
+          </linearGradient>
+
+          {/* Neon glow filter — lightweight single blur */}
+          <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4" result="blur1" />
+            <feMerge>
+              <feMergeNode in="blur1" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
 
-          {/* Eye shine */}
-          <filter id="eyeShine" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-
-          {/* Soft shadow */}
-          <filter id="softShadow" x="-10%" y="-5%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feOffset dy="3" result="offset" />
-            <feComposite in="SourceGraphic" in2="offset" operator="over" />
-          </filter>
+          {/* Static eye glow — radial gradient, no filter */}
+          <radialGradient id="eyeGlowSoft" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#4F6DF5" stopOpacity="0.25" />
+            <stop offset="70%" stopColor="#4F6DF5" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#4F6DF5" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
         <g className="owl-body">
-          {/* === FEET === */}
-          {/* Left foot */}
-          <g transform="translate(155, 400)">
-            <ellipse cx="-12" cy="8" rx="14" ry="6" fill="#d4920a" opacity="0.9" />
-            <ellipse cx="8" cy="5" rx="12" ry="5" fill="#d4920a" opacity="0.9" />
-            <ellipse cx="-2" cy="10" rx="13" ry="5.5" fill="#d4920a" opacity="0.9" />
-            {/* Claws */}
-            <path d="M-24 6 Q-28 2 -26 0" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M18 3 Q22 -1 20 -2" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M-14 14 Q-18 18 -15 19" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
+          {/* === AMBIENT GLOW behind owl === */}
+          <ellipse cx="200" cy="260" rx="130" ry="150" fill="#4F6DF5" opacity="0.03" />
+          <ellipse cx="200" cy="250" rx="90" ry="110" fill="#6B85FF" opacity="0.02" />
+
+          {/* === TALONS — dark metallic === */}
+          <g opacity="0.85">
+            {/* Left foot */}
+            <g transform="translate(158, 405)">
+              <ellipse cx="-8" cy="6" rx="11" ry="5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <ellipse cx="8" cy="4" rx="10" ry="4.5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <ellipse cx="0" cy="8" rx="10" ry="5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <path d="M-18 4 Q-22 0 -20-2" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+              <path d="M16 2 Q20-1 18-3" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+              <path d="M-10 12 Q-14 16-11 17" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+            </g>
+            {/* Right foot */}
+            <g transform="translate(242, 405)">
+              <ellipse cx="8" cy="6" rx="11" ry="5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <ellipse cx="-8" cy="4" rx="10" ry="4.5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <ellipse cx="0" cy="8" rx="10" ry="5" fill="#1a1a2e" stroke="#2a2a45" strokeWidth="0.5" />
+              <path d="M18 4 Q22 0 20-2" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+              <path d="M-16 2 Q-20-1-18-3" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+              <path d="M10 12 Q14 16 11 17" stroke="#4F6DF5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+            </g>
           </g>
-          {/* Right foot */}
-          <g transform="translate(245, 400)">
-            <ellipse cx="12" cy="8" rx="14" ry="6" fill="#d4920a" opacity="0.9" />
-            <ellipse cx="-8" cy="5" rx="12" ry="5" fill="#d4920a" opacity="0.9" />
-            <ellipse cx="2" cy="10" rx="13" ry="5.5" fill="#d4920a" opacity="0.9" />
-            <path d="M24 6 Q28 2 26 0" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M-18 3 Q-22 -1 -20 -2" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M14 14 Q18 18 15 19" stroke="#8b6914" strokeWidth="2" fill="none" strokeLinecap="round" />
-          </g>
 
-          {/* === BODY — chubby round shape === */}
-          <ellipse cx="200" cy="290" rx="110" ry="130" fill="url(#owlBodyGrad)" />
+          {/* === BODY — sleek dark form === */}
+          <ellipse cx="200" cy="300" rx="105" ry="125" fill="url(#owlBodyNight)" />
 
-          {/* Belly patch — lighter oval */}
-          <ellipse cx="200" cy="320" rx="65" ry="85" fill="url(#owlBellyGrad)" opacity="0.7" />
+          {/* Body edge highlight */}
+          <ellipse cx="200" cy="300" rx="105" ry="125" fill="none" stroke="#4F6DF5" strokeWidth="0.5" opacity="0.15" />
 
-          {/* Belly feather pattern — cartoon chevrons */}
-          <g opacity="0.3" stroke="#5a3e28" strokeWidth="1.5" fill="none">
-            <path d="M175 275 L200 285 L225 275" />
-            <path d="M170 295 L200 307 L230 295" />
-            <path d="M172 315 L200 328 L228 315" />
-            <path d="M175 335 L200 347 L225 335" />
-            <path d="M180 355 L200 365 L220 355" />
+          {/* Chest plumage */}
+          <ellipse cx="200" cy="325" rx="60" ry="80" fill="url(#owlChest)" opacity="0.8" />
+
+          {/* Circuit-like feather patterns on chest */}
+          <g opacity="0.2" stroke="#4F6DF5" strokeWidth="0.7" fill="none">
+            <path d="M180 270 L200 280 L220 270" />
+            <path d="M176 290 L200 303 L224 290" />
+            <path d="M178 310 L200 324 L222 310" />
+            <path d="M180 330 L200 342 L220 330" />
+            <path d="M184 350 L200 360 L216 350" />
+            {/* Small horizontal accents */}
+            <line x1="188" y1="285" x2="195" y2="285" opacity="0.5" />
+            <line x1="205" y1="285" x2="212" y2="285" opacity="0.5" />
+            <line x1="185" y1="317" x2="192" y2="317" opacity="0.5" />
+            <line x1="208" y1="317" x2="215" y2="317" opacity="0.5" />
           </g>
 
           {/* === LEFT WING === */}
-          <g className="owl-wing-left" style={{ transformOrigin: "130px 250px" }}>
+          <g className="owl-wing-left" style={{ transformOrigin: "130px 260px" }}>
             <path
-              d="M130 210 Q80 260 90 340 Q100 370 130 380 Q135 340 140 300 Q142 270 140 240 Z"
-              fill="url(#wingGradL)"
-              stroke="#2a1a0d"
-              strokeWidth="1"
+              d="M130 215 Q75 270 88 350 Q98 380 130 388 Q134 345 138 305 Q140 275 138 245 Z"
+              fill="url(#wingNightL)"
+              stroke="#1e1e3a"
+              strokeWidth="0.8"
             />
-            {/* Wing feather lines */}
-            <path d="M120 260 Q105 280 100 310" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.5" />
-            <path d="M125 240 Q108 265 102 300" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.4" />
-            <path d="M118 280 Q106 305 100 330" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.3" />
+            {/* Feather edge lines */}
+            <path d="M118 265 Q100 290 95 325" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.25" />
+            <path d="M122 245 Q102 275 96 310" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.2" />
+            <path d="M115 285 Q100 310 95 340" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.15" />
+            {/* Neon edge accent */}
+            <path d="M88 350 Q78 320 82 290" stroke="#4F6DF5" strokeWidth="1" fill="none" opacity="0.2" />
           </g>
 
           {/* === RIGHT WING === */}
-          <g className="owl-wing-right" style={{ transformOrigin: "270px 250px" }}>
+          <g className="owl-wing-right" style={{ transformOrigin: "270px 260px" }}>
             <path
-              d="M270 210 Q320 260 310 340 Q300 370 270 380 Q265 340 260 300 Q258 270 260 240 Z"
-              fill="url(#wingGradR)"
-              stroke="#2a1a0d"
-              strokeWidth="1"
+              d="M270 215 Q325 270 312 350 Q302 380 270 388 Q266 345 262 305 Q260 275 262 245 Z"
+              fill="url(#wingNightR)"
+              stroke="#1e1e3a"
+              strokeWidth="0.8"
             />
-            <path d="M280 260 Q295 280 300 310" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.5" />
-            <path d="M275 240 Q292 265 298 300" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.4" />
-            <path d="M282 280 Q294 305 300 330" stroke="#5a3e28" strokeWidth="1" fill="none" opacity="0.3" />
+            <path d="M282 265 Q300 290 305 325" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.25" />
+            <path d="M278 245 Q298 275 304 310" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.2" />
+            <path d="M285 285 Q300 310 305 340" stroke="#4F6DF5" strokeWidth="0.5" fill="none" opacity="0.15" />
+            <path d="M312 350 Q322 320 318 290" stroke="#4F6DF5" strokeWidth="1" fill="none" opacity="0.2" />
           </g>
 
-          {/* === HEAD — big round cartoon head === */}
-          <circle cx="200" cy="175" r="95" fill="url(#owlBodyGrad)" />
+          {/* === HEAD === */}
+          <circle cx="200" cy="180" r="92" fill="url(#owlBodyNight)" />
+          <circle cx="200" cy="180" r="92" fill="none" stroke="#4F6DF5" strokeWidth="0.5" opacity="0.1" />
 
-          {/* === EAR TUFTS — pointy cartoon ears === */}
+          {/* === EAR TUFTS — sharp angular === */}
           <path
-            d="M130 110 Q120 60 140 40 Q150 65 155 100"
-            fill="#4a3220"
-            stroke="#3a2515"
-            strokeWidth="1"
+            d="M128 115 Q115 55 140 30 Q148 70 155 105"
+            fill="#0e0e1c"
+            stroke="#1a1a30"
+            strokeWidth="0.8"
           />
+          {/* Neon edge on ear */}
+          <path d="M128 115 Q115 55 140 30" stroke="#4F6DF5" strokeWidth="0.8" fill="none" opacity="0.3" />
+          
           <path
-            d="M127 108 Q118 62 138 44"
-            fill="none"
-            stroke="#6b4f35"
-            strokeWidth="1.5"
-            opacity="0.5"
+            d="M272 115 Q285 55 260 30 Q252 70 245 105"
+            fill="#0e0e1c"
+            stroke="#1a1a30"
+            strokeWidth="0.8"
           />
-          <path
-            d="M270 110 Q280 60 260 40 Q250 65 245 100"
-            fill="#4a3220"
-            stroke="#3a2515"
-            strokeWidth="1"
-          />
-          <path
-            d="M273 108 Q282 62 262 44"
-            fill="none"
-            stroke="#6b4f35"
-            strokeWidth="1.5"
-            opacity="0.5"
-          />
+          <path d="M272 115 Q285 55 260 30" stroke="#4F6DF5" strokeWidth="0.8" fill="none" opacity="0.3" />
 
-          {/* === FACIAL DISC — big heart-shaped face === */}
-          <ellipse cx="200" cy="190" rx="75" ry="70" fill="url(#owlFaceGrad)" />
+          {/* === FACIAL DISC — dark slate === */}
+          <ellipse cx="200" cy="195" rx="72" ry="68" fill="url(#owlFaceNight)" />
+          
+          {/* Facial disc subtle ring */}
+          <ellipse cx="200" cy="195" rx="72" ry="68" fill="none" stroke="#4F6DF5" strokeWidth="0.5" opacity="0.12" />
 
-          {/* Brow ridges — gives character */}
+          {/* Facial feather radiating lines */}
+          <g opacity="0.1" stroke="#6B85FF" strokeWidth="0.5" fill="none">
+            <path d="M155 165 Q145 155 135 150" />
+            <path d="M150 180 Q138 178 128 175" />
+            <path d="M245 165 Q255 155 265 150" />
+            <path d="M250 180 Q262 178 272 175" />
+            <path d="M165 220 Q155 230 148 238" />
+            <path d="M235 220 Q245 230 252 238" />
+          </g>
+
+          {/* === BROW RIDGES — angular, stern === */}
           <path
-            d="M140 162 Q165 148 185 158"
+            d="M135 165 Q158 148 182 160"
             fill="none"
-            stroke="#8b6914"
-            strokeWidth="2.5"
+            stroke="#2a2a50"
+            strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.6"
           />
           <path
-            d="M260 162 Q235 148 215 158"
+            d="M265 165 Q242 148 218 160"
             fill="none"
-            stroke="#8b6914"
-            strokeWidth="2.5"
+            stroke="#2a2a50"
+            strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.6"
           />
+          {/* Brow neon accents */}
+          <path d="M140 164 Q158 150 178 160" fill="none" stroke="#4F6DF5" strokeWidth="0.8" strokeLinecap="round" opacity="0.3" />
+          <path d="M260 164 Q242 150 222 160" fill="none" stroke="#4F6DF5" strokeWidth="0.8" strokeLinecap="round" opacity="0.3" />
 
-          {/* === LEFT EYE — big cartoon eye === */}
-          <g filter="url(#eyeShine)">
-            {/* Eye socket shadow */}
-            <ellipse cx="165" cy="185" rx="34" ry="33" fill="#3d2816" opacity="0.3" />
-            {/* White of eye */}
-            <ellipse cx="165" cy="183" rx="32" ry="31" fill="url(#eyeWhiteGrad)" />
-            {/* Iris */}
-            <circle
-              cx={165 + eyeOffset.x}
-              cy={183 + eyeOffset.y}
-              r="18"
-              fill="url(#irisGrad)"
-            />
-            {/* Pupil */}
-            <circle
-              cx={165 + eyeOffset.x * 1.2}
-              cy={183 + eyeOffset.y * 1.2}
-              r="9"
-              fill="#1a1a2e"
-            />
-            {/* Accent pupil glow */}
-            <circle
-              cx={165 + eyeOffset.x * 1.2}
-              cy={183 + eyeOffset.y * 1.2}
-              r="4"
-              fill="#4F6DF5"
-              opacity="0.5"
-            />
-            {/* Big shine */}
-            <circle
-              cx={159 + eyeOffset.x * 0.5}
-              cy={176 + eyeOffset.y * 0.5}
-              r="6"
-              fill="white"
-              opacity="0.9"
-            />
-            {/* Small shine */}
-            <circle
-              cx={172 + eyeOffset.x * 0.5}
-              cy={189 + eyeOffset.y * 0.5}
-              r="3"
-              fill="white"
-              opacity="0.5"
-            />
+          {/* === LEFT EYE — neon glow === */}
+          <g>
+            {/* Static glow behind eye — cheap radial gradient, no filter */}
+            <circle cx="168" cy="188" r="36" fill="url(#eyeGlowSoft)" />
+            {/* Outer glow ring */}
+            <circle cx="168" cy="188" r="30" fill="none" stroke="#4F6DF5" strokeWidth="1.5" opacity="0.15" />
+            {/* Eye socket */}
+            <ellipse cx="168" cy="188" rx="28" ry="27" fill="#050510" />
+            {/* 1.0x offset group — iris */}
+            <g ref={eyeGroup1xLRef}>
+              <circle cx="168" cy="188" r="19" fill="url(#irisNeon)" opacity="0.9" />
+              <circle cx="168" cy="188" r="19" fill="none" stroke="#6B85FF" strokeWidth="0.5" opacity="0.4" />
+              <circle cx="168" cy="188" r="14" fill="none" stroke="#4F6DF5" strokeWidth="0.3" opacity="0.3" />
+            </g>
+            {/* 1.2x offset group — pupil */}
+            <g ref={eyeGroup12xLRef}>
+              <circle cx="168" cy="188" r="9" fill="#020208" />
+              <circle cx="168" cy="188" r="4" fill="#4F6DF5" opacity="0.25" />
+            </g>
+            {/* 0.4x offset group — highlights */}
+            <g ref={eyeGroup04xLRef}>
+              <circle cx="162" cy="181" r="5" fill="white" opacity="0.85" />
+              <circle cx="175" cy="194" r="2.5" fill="white" opacity="0.4" />
+            </g>
           </g>
 
           {/* === RIGHT EYE === */}
-          <g filter="url(#eyeShine)">
-            <ellipse cx="235" cy="185" rx="34" ry="33" fill="#3d2816" opacity="0.3" />
-            <ellipse cx="235" cy="183" rx="32" ry="31" fill="url(#eyeWhiteGrad)" />
-            <circle
-              cx={235 + eyeOffset.x}
-              cy={183 + eyeOffset.y}
-              r="18"
-              fill="url(#irisGrad)"
-            />
-            <circle
-              cx={235 + eyeOffset.x * 1.2}
-              cy={183 + eyeOffset.y * 1.2}
-              r="9"
-              fill="#1a1a2e"
-            />
-            <circle
-              cx={235 + eyeOffset.x * 1.2}
-              cy={183 + eyeOffset.y * 1.2}
-              r="4"
-              fill="#4F6DF5"
-              opacity="0.5"
-            />
-            <circle
-              cx={229 + eyeOffset.x * 0.5}
-              cy={176 + eyeOffset.y * 0.5}
-              r="6"
-              fill="white"
-              opacity="0.9"
-            />
-            <circle
-              cx={242 + eyeOffset.x * 0.5}
-              cy={189 + eyeOffset.y * 0.5}
-              r="3"
-              fill="white"
-              opacity="0.5"
-            />
+          <g>
+            <circle cx="232" cy="188" r="36" fill="url(#eyeGlowSoft)" />
+            <circle cx="232" cy="188" r="30" fill="none" stroke="#4F6DF5" strokeWidth="1.5" opacity="0.15" />
+            <ellipse cx="232" cy="188" rx="28" ry="27" fill="#050510" />
+            <g ref={eyeGroup1xRRef}>
+              <circle cx="232" cy="188" r="19" fill="url(#irisNeon)" opacity="0.9" />
+              <circle cx="232" cy="188" r="19" fill="none" stroke="#6B85FF" strokeWidth="0.5" opacity="0.4" />
+              <circle cx="232" cy="188" r="14" fill="none" stroke="#4F6DF5" strokeWidth="0.3" opacity="0.3" />
+            </g>
+            <g ref={eyeGroup12xRRef}>
+              <circle cx="232" cy="188" r="9" fill="#020208" />
+              <circle cx="232" cy="188" r="4" fill="#4F6DF5" opacity="0.25" />
+            </g>
+            <g ref={eyeGroup04xRRef}>
+              <circle cx="226" cy="181" r="5" fill="white" opacity="0.85" />
+              <circle cx="239" cy="194" r="2.5" fill="white" opacity="0.4" />
+            </g>
           </g>
 
-          {/* === BEAK — cute small triangular beak === */}
+          {/* === BEAK — small, dark, angular === */}
           <path
-            d="M193 218 L200 235 L207 218 Z"
-            fill="#e8a020"
-            stroke="#c48a10"
-            strokeWidth="1"
+            d="M194 222 L200 240 L206 222 Z"
+            fill="#1a1a3a"
+            stroke="#2a2a50"
+            strokeWidth="0.8"
             strokeLinejoin="round"
           />
-          {/* Beak highlight */}
-          <path
-            d="M196 220 L200 230 L200 220 Z"
-            fill="#f5c040"
-            opacity="0.5"
-          />
-
-          {/* === SMALL SMILE === */}
-          <path
-            d="M192 240 Q200 247 208 240"
-            fill="none"
-            stroke="#8b6914"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            opacity="0.4"
-          />
+          <path d="M197 224 L200 234 L200 224 Z" fill="#4F6DF5" opacity="0.1" />
 
           {/* === TAIL FEATHERS === */}
-          <g opacity="0.8">
-            <path d="M185 400 Q180 430 170 445" stroke="#3d2816" strokeWidth="4" fill="none" strokeLinecap="round" />
-            <path d="M200 402 Q200 435 200 450" stroke="#3d2816" strokeWidth="4" fill="none" strokeLinecap="round" />
-            <path d="M215 400 Q220 430 230 445" stroke="#3d2816" strokeWidth="4" fill="none" strokeLinecap="round" />
+          <g opacity="0.6">
+            <path d="M185 405 Q178 435 168 450" stroke="#0e0e1c" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M200 408 Q200 440 200 455" stroke="#0e0e1c" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M215 405 Q222 435 232 450" stroke="#0e0e1c" strokeWidth="4" fill="none" strokeLinecap="round" />
+            {/* Neon tips */}
+            <circle cx="168" cy="450" r="1.5" fill="#4F6DF5" opacity="0.4" />
+            <circle cx="200" cy="455" r="1.5" fill="#4F6DF5" opacity="0.4" />
+            <circle cx="232" cy="450" r="1.5" fill="#4F6DF5" opacity="0.4" />
+          </g>
+
+          {/* === CIRCUIT LINES on body — tech/futuristic detail === */}
+          <g opacity="0.12" stroke="#4F6DF5" strokeWidth="0.8" fill="none">
+            {/* Left side circuits */}
+            <path d="M130 250 L140 250 L140 270 L150 270" />
+            <circle cx="150" cy="270" r="2" fill="#4F6DF5" />
+            <path d="M125 290 L138 290 L138 310" />
+            <circle cx="138" cy="310" r="1.5" fill="#4F6DF5" />
+            {/* Right side circuits */}
+            <path d="M270 250 L260 250 L260 270 L250 270" />
+            <circle cx="250" cy="270" r="2" fill="#4F6DF5" />
+            <path d="M275 290 L262 290 L262 310" />
+            <circle cx="262" cy="310" r="1.5" fill="#4F6DF5" />
           </g>
         </g>
 
-        {/* === SPARKLE PARTICLES === */}
-        <circle className="particle-1" cx="80" cy="100" r="2" fill="#4F6DF5" opacity="0.6" />
-        <circle className="particle-2" cx="320" cy="80" r="1.5" fill="#6B85FF" opacity="0.5" />
-        <circle className="particle-3" cx="60" cy="300" r="2" fill="#a78bfa" opacity="0.5" />
-        <circle className="particle-4" cx="340" cy="280" r="1.5" fill="#4F6DF5" opacity="0.4" />
-        <circle className="particle-5" cx="100" cy="200" r="2" fill="#6B85FF" opacity="0.5" />
-        <circle className="particle-6" cx="300" cy="380" r="1.5" fill="#a78bfa" opacity="0.4" />
+        {/* === FLOATING PARTICLES — like data/code fragments === */}
+        <circle className="particle-1" cx="70" cy="90" r="1.5" fill="#4F6DF5" opacity="0.5" />
+        <circle className="particle-2" cx="330" cy="70" r="1" fill="#6B85FF" opacity="0.4" />
+        <circle className="particle-3" cx="55" cy="310" r="1.5" fill="#a78bfa" opacity="0.4" />
+        <circle className="particle-4" cx="345" cy="290" r="1" fill="#4F6DF5" opacity="0.3" />
+        <circle className="particle-5" cx="90" cy="200" r="1.5" fill="#6B85FF" opacity="0.4" />
+        <circle className="particle-6" cx="310" cy="390" r="1" fill="#a78bfa" opacity="0.3" />
 
-        {/* Little stars around the owl */}
-        <g opacity="0.3" fill="#f5b731">
-          <path d="M75 150 l3 6 6 1 -4 5 1 6 -6-3 -6 3 1-6 -4-5 6-1z" />
-          <path d="M330 140 l2 5 5 1 -3 4 1 5 -5-3 -5 3 1-5 -3-4 5-1z" />
-          <path d="M350 350 l2 4 4 1 -3 3 1 4 -4-2 -4 2 1-4 -3-3 4-1z" />
+        {/* === FLOATING CODE BRACKETS — night coder vibes === */}
+        <g opacity="0.12" fill="#4F6DF5" fontFamily="monospace" fontSize="14">
+          <text x="60" y="145">{"</"}</text>
+          <text x="320" y="130">{"{}"}</text>
+          <text x="45" y="370">{"=>"}</text>
+          <text x="340" y="360">{"</>"}</text>
+        </g>
+
+        {/* === SMALL STARS — night sky === */}
+        <g opacity="0.2" fill="#6B85FF">
+          <circle cx="80" cy="50" r="1" />
+          <circle cx="320" cy="40" r="0.8" />
+          <circle cx="50" cy="150" r="0.8" />
+          <circle cx="355" cy="170" r="1" />
+          <circle cx="375" cy="100" r="0.6" />
+          <circle cx="30" cy="240" r="0.7" />
+          <circle cx="370" cy="240" r="0.8" />
+          <circle cx="25" cy="60" r="0.6" />
         </g>
       </svg>
     </div>

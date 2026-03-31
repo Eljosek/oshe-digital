@@ -116,19 +116,23 @@ body {
 
 .owl-wing-left {
   animation: owlWingLeft 5s ease-in-out infinite;
+  will-change: transform;
 }
 .owl-wing-right {
   animation: owlWingRight 5s ease-in-out infinite;
+  will-change: transform;
 }
 .owl-body {
   animation: owlFloat 4s ease-in-out infinite;
+  will-change: transform;
 }
 .owl-container {
-  filter: drop-shadow(0 0 40px rgba(79, 109, 245, 0.08));
+  filter: drop-shadow(0 0 40px rgba(79, 109, 245, 0.1));
   transition: filter 0.5s ease;
+  contain: layout style;
 }
 .owl-container:hover {
-  filter: drop-shadow(0 0 60px rgba(79, 109, 245, 0.18));
+  filter: drop-shadow(0 0 60px rgba(79, 109, 245, 0.2));
 }
 .owl-container:hover .owl-wing-left {
   animation-duration: 1.2s;
